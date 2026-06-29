@@ -11,11 +11,10 @@ $hubIp = "192.168.0.27"
 $content = Get-Content "$folder\app.py" -Raw
 $content = $content -replace 'HUB_URL = ""', "HUB_URL = `"http://${hubIp}:8000`""
 Set-Content -Path "$folder\app.py" -Value $content -Encoding UTF8
-$pyPath = "python"
 $hasPython = $false
 try {
     $ver = & python --version 2>&1
-    if ($ver -match "Python 3") { $hasPython = $true; $pyPath = "python" }
+    if ($ver -match "Python 3") { $hasPython = $true }
 } catch {}
 if (-not $hasPython) {
     try {
@@ -30,12 +29,12 @@ if (-not $hasPython) {
     }
 }
 & python -m pip install flask psutil requests --quiet 2>$null
-$vbsContent = @"
-Set WshShell = CreateObject("WScript.Shell")
-WshShell.CurrentDirectory = "$folder"
-WshShell.Run "python -B `"$folder\app.py`"", 0, False
-"@
-Set-Content -Path "$folder\start.vbs" -Value $vbsContent -Encoding ASCII
+$appPath = "$folder\app.py"
+$q = [char]34
+$vbs = "Set WshShell = CreateObject(" + $q + "WScript.Shell" + $q + ")" + "`r`n"
+$vbs += "WshShell.CurrentDirectory = " + $q + $folder + $q + "`r`n"
+$vbs += "WshShell.Run " + $q + "python -B " + $q + $q + $appPath + $q + $q + ", 0, False"
+Set-Content -Path "$folder\start.vbs" -Value $vbs -Encoding ASCII
 schtasks /create /tn "RemotePanel" /tr "wscript.exe `"$folder\start.vbs`"" /sc onlogon /rl highest /f | Out-Null
 Start-Process -FilePath "wscript.exe" -ArgumentList "`"$folder\start.vbs`"" -WindowStyle Hidden
 Start-Sleep 3
