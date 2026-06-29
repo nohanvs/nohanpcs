@@ -41,7 +41,7 @@ USERNAME = os.getlogin()
 PANEL_ID = f"{USERNAME}@{HOSTNAME}"
 
 DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1520928281518407785/iVJGAatuP-2JKqaiRRo8LnmzPvWL4NyBdrcczFP6WlJlHwCR4Jhjep4gwRIih7UizokM"
-HUB_URL = ""
+HUB_URL = "http://localhost:8000"
 
 connected_panels = {}
 connected_panels[PANEL_ID] = {
