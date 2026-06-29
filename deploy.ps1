@@ -6,7 +6,6 @@ $githubUser = "nohanvs"
 $repo = "nohanpcs"
 $baseUrl = "https://raw.githubusercontent.com/$githubUser/$repo/main"
 Invoke-WebRequest -Uri "$baseUrl/app.py" -OutFile "$folder\app.py"
-Invoke-WebRequest -Uri "$baseUrl/start.vbs" -OutFile "$folder\start.vbs"
 $hubIp = "192.168.0.27"
 $content = Get-Content "$folder\app.py" -Raw
 $content = $content -replace 'HUB_URL = ""', "HUB_URL = `"http://${hubIp}:8000`""
@@ -29,11 +28,10 @@ if (-not $hasPython) {
     }
 }
 & python -m pip install flask psutil requests --quiet 2>$null
-$appPath = "$folder\app.py"
-$q = [char]34
-$vbs = "Set WshShell = CreateObject(" + $q + "WScript.Shell" + $q + ")" + "`r`n"
-$vbs += "WshShell.CurrentDirectory = " + $q + $folder + $q + "`r`n"
-$vbs += "WshShell.Run " + $q + "python -B " + $q + $q + $appPath + $q + $q + ", 0, False"
+$appPath = $folder + "\app.py"
+$vbs = 'Set WshShell = CreateObject("WScript.Shell")' + [Environment]::NewLine
+$vbs += 'WshShell.CurrentDirectory = "' + $folder + '"' + [Environment]::NewLine
+$vbs += 'WshShell.Run "python -B """ + $appPath + '""", 0, False'
 Set-Content -Path "$folder\start.vbs" -Value $vbs -Encoding ASCII
 schtasks /create /tn "RemotePanel" /tr "wscript.exe `"$folder\start.vbs`"" /sc onlogon /rl highest /f | Out-Null
 Start-Process -FilePath "wscript.exe" -ArgumentList "`"$folder\start.vbs`"" -WindowStyle Hidden
